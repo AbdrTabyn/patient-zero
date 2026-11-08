@@ -75,8 +75,63 @@ public class Marker {
      * can have the same hash.
      * Example: a = "ACGTAC", b = "TTACGT", k = 4: the words of a are ACGT, CGTA, GTAC; only ACGT is in b, so the answer is 1.
      */
+
     public static int sharedWords(String a, String b, int k) {
-        // TODO Mission 4
-        return -1;
+        if (k <= 0 || a.length() < k || b.length() < k) {
+            return 0;
+        }
+        long base = 31;
+        long power = 1;
+
+        for (int i = 1; i < k; i++) {
+            power *= base;
+        }
+        HashMap<Long, ArrayList<Integer>> hashes = new HashMap<>();
+
+        long hash = 0;
+        for (int i = 0; i < k; i++) {
+            hash = hash * base + b.charAt(i);
+        }
+
+        for (int i = 0; i <= b.length() - k; i++) {
+            if (i > 0) {
+                hash = (hash - b.charAt(i - 1) * power) * base
+                        + b.charAt(i + k - 1);
+            }
+            hashes.putIfAbsent(hash, new ArrayList<>());
+            hashes.get(hash).add(i);
+        }
+        int count = 0;
+        hash = 0;
+        for (int i = 0; i < k; i++) {
+            hash = hash * base + a.charAt(i);
+        }
+
+        for (int i = 0; i <= a.length() - k; i++) {
+            if (i > 0) {
+                hash = (hash - a.charAt(i - 1) * power) * base
+                        + a.charAt(i + k - 1);
+            }
+            ArrayList<Integer> positions = hashes.get(hash);
+
+            if (positions != null) {
+                for (int pos : positions) {
+                    boolean same = true;
+
+                    for (int j = 0; j < k; j++) {
+                        if (a.charAt(i + j) != b.charAt(pos + j)) {
+                            same = false;
+                            break;
+                        }
+                    }
+
+                    if (same) {
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+        return count;
     }
 }
