@@ -17,9 +17,46 @@ public class Outbreak {
      * Main calls this twice: with all costs equal to 1 (the line "Tests needed") and with the real costs ("Cheapest testing").
      */
     public static boolean[] cheapestTests(int n, int[][] nb, int[] cost) {
-        // TODO Mission 5a
-        return new boolean[n];
+        long[][] dp = new long[n][2];
+        boolean[] tested = new boolean[n];
+
+        dfsCost(0, -1, nb, cost, dp);
+        boolean rootTested = dp[0][1] <= dp[0][0];
+        rebuild(0, -1, rootTested, nb, dp, tested);
+
+        return tested;
     }
+
+    private static void dfsCost(int v, int parent, int[][] nb, int[] cost, long[][] dp) {
+        dp[v][0] = 0;
+        dp[v][1] = cost[v];
+
+        for (int u : nb[v]) {
+            if (u == parent) continue;
+            dfsCost(u, v, nb, cost, dp);
+
+            dp[v][0] += dp[u][1];
+            dp[v][1] += Math.min(dp[u][0], dp[u][1]);
+        }
+    }
+
+    private static void rebuild(int v, int parent, boolean take,
+                                int[][] nb, long[][] dp, boolean[] tested) {
+        tested[v] = take;
+
+        for (int u : nb[v]) {
+            if (u == parent) continue;
+            boolean childTake;
+
+            if (!take) {
+                childTake = true;
+            } else {
+                childTake = dp[u][1] <= dp[u][0];
+            }
+            rebuild(u, v, childTake, nb, dp, tested);
+        }
+    }
+
 
     /**
      * The number of links on the longest chain of infections, that is the longest path in the tree (counted in links).
@@ -27,7 +64,27 @@ public class Outbreak {
      * Example: a line 0-1-2-3 has chain 3; a star with centre 0 and leaves 1, 2, 3 has chain 2.
      */
     public static int longestChain(int n, int[][] nb) {
-        // TODO Mission 5b
-        return -1;
+        int[] longest = new int[1];
+        dfsChain(0, -1, nb, longest);
+        return longest[0];
+    }
+
+    private static int dfsChain(int v, int parent, int[][] nb, int[] longest) {
+        int first = 0;
+        int second = 0;
+
+        for (int u : nb[v]) {
+            if (u == parent) continue;
+            int depth = dfsChain(u, v, nb, longest) + 1;
+
+            if (depth > first) {
+                second = first;
+                first = depth;
+            } else if (depth > second) {
+                second = depth;
+            }
+        }
+        longest[0] = Math.max(longest[0], first + second);
+        return first;
     }
 }

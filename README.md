@@ -1,75 +1,105 @@
+
 # Assignment 4. Patient Zero
 
-Student ID:
-Name:
-Group:
+**Student ID:** 251888  
+**Name:** Abdurrakhim Yestaiuly  
+**Group:** SE-2532
 
-This file is the report. Fill it in as you go. How to start: `START_HERE.md`. The task: `docs/Assignment4.pdf`.
+## Program Output
 
-## Program output
+```text
+Mutations: 78
+Shared core: 1084
+Marker hits: 7
+First hit: 924
+Border length: 3
+Shared words: 501
+Tests needed: 34
+Cheapest testing: 125
+Longest chain: 21
+```
 
-The 9 lines your program prints on your data (`java -cp out Main`):
+## Outbreak Report
 
-    Mutations:
-    Shared core:
-    Marker hits:
-    First hit:
-    Border length:
-    Shared words:
-    Tests needed:
-    Cheapest testing:
-    Longest chain:
+![Outbreak Report](output/outbreak.png)
 
-My outbreak report (a screenshot of `output/outbreak.html`):
+## Mission 1. Edit Distance
 
-![outbreak](output/outbreak.png)
+I used dynamic programming to calculate the minimum number of changes between two strains.
 
-## Questions
+The cell d[i][j] represents the minimum operations needed to change the first i characters of A into the first j characters of B.
 
-Answer in your own words, two or three sentences each.
+If characters match, I use the diagonal value. Otherwise, I take the minimum of insertion, deletion and replacement, plus one.
 
-Mission 1. What does the cell d[i][j] of your table mean, and how is it computed from other cells?
+## Mission 2. Longest Common Subsequence
 
-Mission 2. How is the longest common subsequence different from the longest common substring? My Shared core is bigger than the number of letters that are the same at the same place: why?
+LCS finds the longest sequence of characters in the same order, but they do not need to be consecutive.
 
-Mission 3. What does the prefix function tell you, and why does the pointer in the text never go back in KMP? What is the Border length of my marker and what does it mean?
+Unlike LCS, the longest common substring requires characters to be next to each other.
 
-Mission 4. Why must you compare the letters after the hashes are equal? What happens to the cost of Rabin-Karp if many windows have the same hash?
+## Mission 3. KMP
 
-Mission 5. What are the two states of a person in your DP, and how do you get the answer for a person from its children? Why does a greedy "test the person with most links first" not always give the cheapest answer?
+The prefix function finds the length of the longest proper prefix that is also a suffix.
 
-## AI use
+KMP uses this function to avoid unnecessary comparisons without moving backwards in the text.
 
-The syllabus requires you to say which AI tools you used and for what. Write the tool (ChatGPT, Copilot, other) and what you asked it: explain an idea, find an error, review code. Write "none" if you did not use any. If you took code or text from a book or a website, give the source here.
+My border length is 3, meaning the first and last 3 characters of the marker are equal.
 
-## Timing (Mission 7)
+## Mission 4. Rabin-Karp
 
-Milliseconds, average of 3 runs, from `java -cp out Bench`.
+Rabin-Karp uses a rolling hash to compare substrings efficiently.
 
-| test | size | time |
+When hashes match, I compare the actual characters because different strings can have the same hash.
+
+Many hash collisions increase the number of comparisons and make the algorithm slower.
+
+## Mission 5. Tree DP
+
+I used two DP states for each person:
+
+- Not tested: all children must be tested.
+- Tested: each child can be tested or not, depending on the minimum cost.
+
+Greedy does not always work because a locally good choice may increase the total cost.
+
+For the longest chain, I used DFS to find the two longest downward paths from each node.
+
+## Benchmark Results
+
+### Naive Search vs KMP
+
+| Text length | Naive | KMP |
 |---|---|---|
-| naive search | 20 000 / 40 000 / 80 000 | |
-| KMP | 20 000 / 40 000 / 80 000 | |
-| edit distance | 500 / 1000 / 2000 / 4000 | |
+| 20000 | 55.3 ms | 2.3 ms |
+| 40000 | 121.6 ms | 0.7 ms |
+| 80000 | 244.3 ms | 0.5 ms |
 
-What do the numbers say about how the time grows? When you double the size, by how much does each time grow? Two or three sentences.
+### Edit Distance
 
-## Complexity
+| Length | Time |
+|---|---|
+| 500 | 7.1 ms |
+| 1000 | 9.0 ms |
+| 2000 | 21.0 ms |
+| 4000 | 65.5 ms |
 
-n is the length of the text (or of a strain), m the length of the pattern, k the length of the window, v the number of people. Fill in every algorithm you wrote.
+The naive search becomes slower as the text grows, while KMP avoids repeated comparisons. Small KMP timing differences may be caused by JVM warm-up.
 
-| algorithm | time | space | assumptions |
-|---|---|---|---|
-| Edit distance | | | |
-| LCS | | | |
-| Prefix function and KMP | | | |
-| Rabin-Karp (shared words) | | | |
-| Tree DP | | | |
+Edit distance becomes slower for longer strings because it fills a two-dimensional DP table.
 
-## Before you submit
+## Time and Space Complexity
 
-- The four files in `data` and the screenshot `output/outbreak.png` are in the repository.
-- `java tools/Check.java` shows all examples right.
-- This README is filled in, the program output and the section AI use included.
-- The work is pushed to main (at least one commit per mission) and the repository is public.
-- The link is attached in Moodle.
+| Algorithm | Time | Space |
+|---|---|---|
+| Edit Distance | O(n * m) | O(n * m) |
+| LCS | O(n * m) | O(n * m) |
+| KMP | O(n + m + h) | O(m + h) |
+| Rabin-Karp | O(n + m) average | O(m) |
+| Tree DP | O(v) | O(v) |
+| Longest Chain | O(v) | O(v) |
+
+Here, n and m are string lengths, h is the number of matches, and v is the number of people. Rabin-Karp assumes a fixed window size and few hash collisions; in the worst case it can take O(n * m * k), where k is the window size.
+
+## AI Use
+
+I used ChatGPT to help and understand the algorithms and prepare the README. I reviewed the code and tested it using Check.java and Bench.java.
