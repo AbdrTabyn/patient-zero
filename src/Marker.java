@@ -10,9 +10,24 @@ public class Marker {
      * also a suffix of p[0..i] ("proper" means shorter than p[0..i] itself).
      * Example: p = "ACGAC" gives [0, 0, 0, 1, 2]. The last number is the "Border length" line.
      */
+
     public static int[] prefixFunction(String p) {
-        // TODO Mission 3a
-        return new int[p.length()];
+        int n = p.length();
+        int[] pi = new int[n];
+
+        for (int i = 1; i < n; i++) {
+            int j = pi[i - 1];
+
+            while (j > 0 && p.charAt(i) != p.charAt(j)) {
+                j = pi[j - 1];
+            }
+
+            if (p.charAt(i) == p.charAt(j)) {
+                j++;
+            }
+            pi[i] = j;
+        }
+        return pi;
     }
 
     /**
@@ -21,9 +36,35 @@ public class Marker {
      * Use the prefix function: the text pointer never goes back. The number of positions is "Marker hits",
      * the first one is "First hit" (-1 when there is none).
      */
+
     public static int[] findAll(String text, String p) {
-        // TODO Mission 3b
-        return new int[0];
+        if (p.length() == 0) {
+            return new int[0];
+        }
+        int[] pi = prefixFunction(p);
+        ArrayList<Integer> positions = new ArrayList<>();
+
+        int j = 0;
+        for (int i = 0; i < text.length(); i++) {
+            while (j > 0 && text.charAt(i) != p.charAt(j)) {
+                j = pi[j - 1];
+            }
+
+            if (text.charAt(i) == p.charAt(j)) {
+                j++;
+            }
+
+            if (j == p.length()) {
+                positions.add(i - p.length() + 1);
+                j = pi[j - 1];
+            }
+        }
+        int[] result = new int[positions.size()];
+
+        for (int i = 0; i < positions.size(); i++) {
+            result[i] = positions.get(i);
+        }
+        return result;
     }
 
     /**
